@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import CommonForm from "../common/form";
 import { DialogContent } from "../ui/dialog";
 import { Label } from "../ui/label";
@@ -24,9 +24,23 @@ function AdminOrderDetailsView({ orderDetails }) {
 
   console.log(orderDetails, "orderDetailsorderDetails");
 
+  useEffect(() => {
+    if (orderDetails) {
+      setFormData({ status: orderDetails.orderStatus || "" });
+    }
+  }, [orderDetails]);
+
   function handleUpdateStatus(event) {
     event.preventDefault();
     const { status } = formData;
+
+    if (!status) {
+      toast({
+        title: "Please select a status",
+        variant: "destructive"
+      });
+      return;
+    }
 
     dispatch(
       updateOrderStatus({ id: orderDetails?._id, orderStatus: status })
@@ -34,7 +48,6 @@ function AdminOrderDetailsView({ orderDetails }) {
       if (data?.payload?.success) {
         dispatch(getOrderDetailsForAdmin(orderDetails?._id));
         dispatch(getAllOrdersForAdmin());
-        setFormData(initialFormData);
         toast({
           title: data?.payload?.message,
         });
@@ -121,8 +134,10 @@ function AdminOrderDetailsView({ orderDetails }) {
                 label: "Order Status",
                 name: "status",
                 componentType: "select",
+                placeholder: "Select order status",
                 options: [
                   { value: "pending", label: "Pending" },
+                  { value: "confirmed", label: "Confirmed" },
                   { value: "inProcess", label: "In Process" },
                   { value: "inShipping", label: "In Shipping" },
                   { value: "delivered", label: "Delivered" },
